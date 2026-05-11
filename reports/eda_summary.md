@@ -1,62 +1,148 @@
-\# EDA Summary
+\# Exploratory Data Analysis (EDA) Summary
 
 
 
-\## 데이터 크기
-
-\- 행: 119,390 / 열: 32
+\## EDA Objective
 
 
 
-
-
-\## 변수 종류
-
-\- 수치형 변수: 20개 (lead\_time, adr, adults 등)
-
-\- 범주형 변수: 12개 (hotel, meal, country 등)
-
-\- 이진 변수: hotel, is\_canceled, is\_repeated\_guest
+This EDA was conducted to support two project objectives:
 
 
 
+1\. Booking Cancellation Prediction (`is\_canceled`)
 
-
-\## 결측치
-
-| 변수 | 결측치 수 | 비율 |
-
-|------|--------|------|
-
-| children | 4 | 0.003% |
-
-| country | 488 | 0.41% |
-
-| agent | 16,340 | 13.69% |
-
-| company | 112,593 | 94.31% |
+2\. ADR (Average Daily Rate) Prediction
 
 
 
-
-
-\## 기초 통계량
-
-\- 취소율: 37.04%
-
-\- ADR 평균: 101.83 / 최대값: 5,400
-
-\- lead\_time 평균: 104일 / 최대값: 737일
+The analysis focused on understanding booking patterns, identifying important variables, detecting missing values and outliers, and exploring relationships between features.
 
 
 
+\---
 
 
-\## 이상치
 
-\- ADR 최대값 5,400으로 이상치 존재
+\## Dataset Exploration
 
-\- ADR 0 이하인 행: 1,960개
 
-\- total guests가 0인 행: 180개
+
+Basic dataset exploration included:
+
+
+
+\* Dataset shape and sample records
+
+\* Numerical and categorical variable classification
+
+\* Binary variable identification
+
+\* Missing value analysis
+
+\* Statistical summary of key numerical variables
+
+
+
+Missing counts and missing rates were examined to understand incomplete data.
+
+
+
+\---
+
+
+
+\## Cancellation Analysis
+
+
+
+Several visualizations were created to analyze cancellation behavior:
+
+
+
+\* Distribution of cancellation status
+
+\* Cancellation rate by hotel type
+
+\* Cancellation rate by deposit type
+
+\* Cancellation rate by market segment
+
+\* Cancellation rate by customer type
+
+\* Cancellation rate by lead time group
+
+\* Cancellation rate by total special requests
+
+
+
+The analysis showed that cancellation patterns vary depending on customer and booking characteristics.
+
+
+
+\---
+
+
+
+\## ADR Analysis
+
+
+
+ADR-related analysis included:
+
+
+
+\* Histogram of ADR
+
+\* Boxplot of ADR
+
+\* ADR distribution by hotel type
+
+\* Average ADR by arrival month
+
+\* Scatter plot of lead time and ADR
+
+
+
+The results indicated that ADR has a right-skewed distribution with several outliers and seasonal patterns.
+
+
+
+\---
+
+
+
+\## Outlier and Correlation Analysis
+
+
+
+Outlier analysis identified:
+
+
+
+\* Extremely high ADR values
+
+\* ADR values less than or equal to zero
+
+\* Extremely large lead time values
+
+\* Bookings with zero guests
+
+
+
+A correlation matrix was also generated to examine relationships between important variables such as `is\_canceled`, `adr`, `lead\_time`, and `previous\_cancellations`.
+
+
+
+\---
+
+
+
+\## Conclusion
+
+
+
+The EDA provided useful insights for both cancellation prediction and ADR prediction tasks. The findings from this analysis will support preprocessing, feature engineering, and machine learning model development.
+
+
 
