@@ -1,45 +1,59 @@
+# src/processing.py
+import os
 import pandas as pd
 import numpy as np
-import os
 
-def preprocess_hotel_data(input_path):
+def preprocess_hotel_booking_data(raw_data_path: str, output_dir: str):
     """
-    Main preprocessing function that cleans data and performs feature engineering.
-    Reflects Team Lead's feedback on Agent/Company binary flags, country simplification, 
-    and ghost booking removal.
+    Executes the end-to-end hotel booking data preprocessing pipeline.
+    Synchronizes logic between script and notebook, ensuring no absolute paths are leaked.
     """
-    # Load raw data 
-    df = pd.read_csv(input_path)
+    print("=" * 60)
+    print("STARTING HOTEL BOOKING DATA PREPROCESSING PIPELINE")
+    print("=" * 60)
     
-    # 0. Clean column names (Remove potential whitespace)
+    # 1. Raw Data Loading & Validation
+    if not os.path.exists(raw_data_path):
+        raise FileNotFoundError(f"Raw data not found at target path: {raw_data_path}")
+        
+    df_raw = pd.read_csv(raw_data_path)
+    df = df_raw.copy()
     df.columns = df.columns.str.strip()
     
-    # 1. Handle Missing Values & Binary Indicators
-    df['has_agent'] = df['agent'].notnull().astype(int)
-    df['has_company'] = df['company'].notnull().astype(int)
-    df.drop(['agent', 'company'], axis=1, inplace=True)
+    print(f"Loaded raw dataset successfully. Initial Shape: {df.shape}")
     
-    df['children'] = df['children'].fillna(0)
-    df['country'] = df['country'].fillna('Unknown')
-
-    # 2. Filter invalid records (Ghost Bookings)
-    # Purge entries with zero total guests as per summary report
+    # 2. Data Cleaning & Anomaly Resolution (Feedback #1)
+    # Filter out invalid "Ghost Bookings" where total guest count is zero
     df['total_guests'] = df['adults'] + df['children'] + df['babies']
     df = df[df['total_guests'] > 0]
-
-    # 3. Feature Engineering
+    print(f"Filtered zero-guest booking anomalies. Remaining records: {len(df)}")
+    
+    # Missing Value Imputation
+    df['children'] = df['children'].fillna(0)
+    df['country'] = df['country'].fillna('Unknown')
+    
+    # Convert IDs into binary flags to prevent models from treating nominal IDs as continuous scales
+    if 'agent' in df.columns:
+        df['has_agent'] = df['agent'].notnull().astype(int)
+        df.drop('agent', axis=1, inplace=True)
+    if 'company' in df.columns:
+        df['has_company'] = df['company'].notnull().astype(int)
+        df.drop('company', axis=1, inplace=True)
+        
+    # 3. Feature Engineering & Dimensionality Management
     df['total_stay'] = df['stays_in_weekend_nights'] + df['stays_in_week_nights']
     df['is_family'] = ((df['children'] > 0) | (df['babies'] > 0)).astype(int)
-
-    # 4. Simplify Country Data (Reduce dimensionality)
-    # Keep top 10 countries and label others as 'Other' to prevent column explosion
+    
+    # Consolidate high cardinality country data to prevent sparse matrix explosion
     top_10_countries = df['country'].value_counts().nlargest(10).index
     df['country'] = df['country'].apply(lambda x: x if x in top_10_countries else 'Other')
-
-    # 5. Prevent Data Leakage
-    df.drop(['reservation_status', 'reservation_status_date'], axis=1, inplace=True)
-
-    # 6. Categorical Encoding
+    
+    # 4. Data Leakage Prevention
+    # Drop columns that are determined after the booking outcome
+    leak_cols = ['reservation_status', 'reservation_status_date']
+    df.drop([c for c in leak_cols if c in df.columns], axis=1, inplace=True)
+    
+    # 5. Categorical One-Hot Encoding (Including Room Types - Feedback #5)
     cat_cols = [
         'hotel', 'meal', 'market_segment', 'distribution_channel', 
         'deposit_type', 'customer_type', 'arrival_date_month', 'country',
@@ -47,23 +61,39 @@ def preprocess_hotel_data(input_path):
     ]
     df_final = pd.get_dummies(df, columns=cat_cols, drop_first=True)
     
-    return df_final
-
-def save_processed_datasets(df_final, output_dir='./data/processed/'):
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-
-    # Classification Dataset
-    df_final.to_csv(os.path.join(output_dir, 'hotel_bookings_clf.csv'), index=False)
-
-    # Regression Dataset with strict ADR filtering for actual guests
+    # Convert bool types to int for cross-platform model alignment
+    bool_cols = df_final.select_dtypes(include=['bool']).columns
+    df_final[bool_cols] = df_final[bool_cols].astype(int)
+    
+    # 6. Decoupled Dataset Splitting & Export (Feedback #2, #3, #7)
+    os.makedirs(output_dir, exist_ok=True)
+    
+    # A. Classification Dataset
+    clf_output_path = os.path.join(output_dir, 'hotel_bookings_clf.csv')
+    df_final.to_csv(clf_output_path, index=False)
+    print(f"Saved classification dataset to `../data/processed/hotel_bookings_clf.csv`")
+    
+    # B. Regression Dataset (Non-canceled bookings with strict ADR filtering)
     df_reg = df_final[df_final['is_canceled'] == 0].copy()
-    df_reg = df_reg[(df_reg['adr'] > 0) & (df_reg['adr'] < 500)] 
-    df_reg.to_csv(os.path.join(output_dir, 'hotel_bookings_reg.csv'), index=False)
+    df_reg = df_reg[(df_reg['adr'] > 0) & (df_reg['adr'] < 500)]
+    
+    reg_output_path = os.path.join(output_dir, 'hotel_bookings_reg.csv')
+    df_reg.to_csv(reg_output_path, index=False)
+    print(f"Saved regression dataset to `../data/processed/hotel_bookings_reg.csv`")
+    
+    # 7. Final Sanity Check and Verification Audit (Feedback #8)
+    print("\n" + "=" * 40)
+    print("FINAL PIPELINE VERIFICATION AUDIT")
+    print("=" * 40)
+    print(f"Raw dataset loaded successfully  : True (Shape: {df_raw.shape})")
+    print(f"Classification dataset (CLF) shape: {df_final.shape[0]} rows / {df_final.shape[1]} columns")
+    print(f"Regression dataset (REG) shape    : {df_reg.shape[0]} rows / {df_reg.shape[1]} columns")
+    print(f"Total Remaining Missing Values   : {df_final.isnull().sum().sum()}")
+    print(f"Total Remaining Object Columns   : {len(df_final.select_dtypes(include=['object']).columns)}")
+    print("=" * 40)
 
 if __name__ == "__main__":
-    # Path assumes execution from the project root directory
-    INPUT = './data/raw/hotel_bookings.csv' 
-    final_df = preprocess_hotel_data(INPUT)
-    save_processed_datasets(final_df, output_dir='./data/processed/')
-    print("Preprocessing Script Execution Complete. (Logic Sync with Notebook)")
+    preprocess_hotel_booking_data(
+        raw_data_path="../data/raw/hotel_bookings.csv",
+        output_dir="../data/processed"
+    )
