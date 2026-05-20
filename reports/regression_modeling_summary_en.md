@@ -6,9 +6,13 @@ This section covers the **ADR regression modeling** part of the hotel booking de
 
 The business objective is to support hotel revenue management and pricing decisions by estimating ADR from booking conditions such as hotel type, stay length, number of guests, market segment, room type, and seasonality variables.
 
-Implementation file:
+Implementation files:
 
-- `notebooks/04_regression_modeling.ipynb`
+| File | Purpose |
+| --- | --- |
+| `notebooks/04_regression_modeling.ipynb` | Regression modeling experiment and result review |
+| `src/regression.py` | Top-level function for the Open Source SW requirement |
+| `reports/regression_modeling_user_manual.md` | Function manual, parameters, outputs, and usage |
 
 ## 2. Data Used
 
@@ -148,7 +152,23 @@ This implementation aligns with the proposal:
 - Scaling is applied only inside the Linear Regression pipeline.
 - Evaluation uses MAE, MSE, RMSE, and R².
 
-## 10. Limitations and Next Steps
+## 10. Open Source SW Function
+
+The term project requirement asks for a single top-level function and a user manual/specification. To satisfy this requirement, `src/regression.py` now provides `run_regression_modeling()`.
+
+This function performs the main regression workflow:
+
+- Load `data/processed/hotel_bookings_reg.csv`.
+- Remove `adr`, `is_canceled`, and `assigned_room_type_*` from model input.
+- Run train/test split.
+- Compare five model/parameter combinations with 5-fold cross validation.
+- Select the final model by the lowest CV RMSE.
+- Evaluate the final model on the test set.
+- Save presentation-ready figures.
+
+The usage guide is documented in `reports/regression_modeling_user_manual.md`.
+
+## 11. Limitations and Next Steps
 
 The current model is a strong regression baseline. Future improvements can include:
 
@@ -157,7 +177,7 @@ The current model is a strong regression baseline. Future improvements can inclu
 - More Random Forest parameter combinations. The current parameter search is intentionally limited for a clear baseline.
 - More detailed residual analysis by ADR range or hotel type.
 
-## 11. Final Recommendation
+## 12. Final Recommendation
 
 The regression modeling work is ready as a strong baseline. Random Forest depth 14 is the best current model among the five compared combinations because it has the lowest CV RMSE, the lowest test error, and the highest R².
 

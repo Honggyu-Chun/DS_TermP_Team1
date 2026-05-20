@@ -7,8 +7,10 @@ This document records the validation loop for the regression modeling work.
 Reviewed implementation:
 
 - `notebooks/04_regression_modeling.ipynb`
+- `src/regression.py`
 - `reports/regression_modeling_summary.md`
 - `reports/regression_modeling_summary_en.md`
+- `reports/regression_modeling_user_manual.md`
 - `reports/figures/regression_model_comparison.png`
 - `reports/figures/regression_actual_vs_predicted.png`
 - `reports/figures/regression_residual_analysis.png`
@@ -30,6 +32,7 @@ Key modeling choices:
 | CV method | 5-fold `KFold` |
 | Metrics | MAE, MSE, RMSE, R² |
 | Final model | Random Forest depth 14 |
+| Open Source SW function | `run_regression_modeling()` in `src/regression.py` |
 
 ## 3. Final Metrics Verified
 
@@ -56,6 +59,10 @@ Local verification was run with the D-drive conda environment:
 - Executed code cells: 12 / 12
 - Notebook source Korean tokens: 0
 - Each code cell begins with a short English comment.
+- Top-level source function: `run_regression_modeling()`
+- User manual: `reports/regression_modeling_user_manual.md`
+- Function execution: successful with the D-drive `ds` conda environment
+- Function result matched the notebook metrics: final model `Random Forest depth 14`, 71 input features, test RMSE 18.6750, test R² 0.8449
 
 Generated figure files:
 
@@ -82,6 +89,7 @@ Non-blocking feedback was reflected:
 - The Korean summary wording for before-arrival ADR prediction was clarified.
 - The English summary now includes clearer notes on assigned-room ablation, residual interpretation, and limited Random Forest parameter search.
 - CV RMSE calculation is documented as `sqrt(mean CV MSE)`.
+- The Open Source SW requirement is strengthened with a reusable top-level function and user manual.
 
 ## 6. Final Recommendation
 
