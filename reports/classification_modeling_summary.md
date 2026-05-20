@@ -56,6 +56,8 @@ Target 변수는 `is_canceled`이다. 따라서 모델 입력 `X`에서는 `is_c
 
 이 선택은 논리적으로 안전하다. `reserved_room_type_*`는 고객이 예약한 객실 타입이므로 예약 시점에 알 수 있지만, `assigned_room_type_*`는 호텔이 나중에 배정한 객실 타입일 수 있다. 취소 예측 모델은 “사전에” 취소 위험을 예측해야 하므로, 미래 또는 운영 이후 정보를 포함할 가능성이 있는 컬럼은 제거하는 것이 더 방어 가능한 선택이다.
 
+전처리 요약에서는 `assigned_room_type`의 영향 확인을 위한 feature ablation 가능성을 언급했다. 본 classification baseline에서는 사전 예측이라는 비즈니스 목적을 우선하여 해당 컬럼을 제외했다. 이후 시간이 충분하면 같은 train/test split에서 `assigned_room_type_*`를 포함한 모델과 제외한 모델을 비교하는 추가 실험으로 확장할 수 있다.
+
 ## 4. 사용한 모델과 수업 범위
 
 모델은 수업에서 다룬 scikit-learn 기반 supervised learning, model evaluation, ensemble learning 범위 안에서 구성했다.
@@ -212,6 +214,7 @@ Confusion matrix는 다음과 같다.
 
 - Decision Tree의 `max_depth` 값을 더 다양하게 바꾸며 overfitting 여부를 비교할 수 있다.
 - Random Forest는 precision이 높았으므로, 호텔이 false alarm을 줄이고 싶다면 Random Forest도 후보로 유지할 수 있다.
+- `assigned_room_type_*` 포함/제외 feature ablation을 추가하면 전처리 요약에서 언급한 prediction-time risk를 실험적으로 더 명확히 설명할 수 있다.
 - 취소 예약 recall을 더 높이는 것이 목적이면 class weight 또는 SMOTE를 검토할 수 있다. 단, 현재 target 비율은 62.92% 대 37.08%로 극단적인 imbalance는 아니므로 이번 baseline에서는 사용하지 않았다.
 - 최종 보고서에서는 confusion matrix를 함께 제시해 단순 accuracy보다 비즈니스 오류 비용을 중심으로 해석하는 것이 좋다.
 
