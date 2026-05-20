@@ -48,6 +48,8 @@ After these exclusions, the regression model uses **71 input features**.
 
 `reserved_room_type_*` is kept because it is known at reservation time. `assigned_room_type_*` is excluded because it may be determined later by hotel operations.
 
+This is a conservative choice for before-arrival ADR prediction. A future ablation study can compare model performance with and without `assigned_room_type_*`.
+
 ## 4. Models and Evaluation
 
 Five model/parameter combinations were compared:
@@ -68,6 +70,8 @@ Evaluation design:
 
 RMSE was used as the main selection metric because large ADR errors can be more harmful for pricing and revenue decisions.
 
+In this notebook, CV RMSE is calculated as `sqrt(mean CV MSE)`. The reported CV RMSE values are consistent with that calculation.
+
 ## 5. Cross-Validation Results
 
 | Model | CV MAE | CV MSE | CV RMSE | CV R² |
@@ -78,7 +82,7 @@ RMSE was used as the main selection metric because large ADR errors can be more 
 | Decision Tree depth 8 | 19.5132 | 757.5012 | 27.5227 | 0.6595 |
 | Linear Regression | 21.0904 | 821.1745 | 28.6561 | 0.6309 |
 
-Random Forest depth 14 had the lowest CV RMSE and the highest CV R². This suggests that ADR has nonlinear patterns that are better captured by tree-based ensemble learning than by a simple linear baseline.
+Among the five compared model/parameter combinations, Random Forest depth 14 had the lowest CV RMSE and the highest CV R². This suggests that ADR has nonlinear patterns that are better captured by tree-based ensemble learning than by a simple linear baseline.
 
 ## 6. Final Test Results
 
@@ -100,6 +104,8 @@ Interpretation:
 - R² is 0.8449, meaning the model explains about 84.49% of ADR variation in the test set.
 - CV RMSE 18.4584 and test RMSE 18.6750 are close, so the model does not show a major test performance drop.
 
+This means Random Forest depth 14 is the best model among the tested combinations, not that every possible regression model and hyperparameter setting was exhaustively searched.
+
 ## 7. Saved Figures
 
 The notebook saves presentation-ready figures under `reports/figures`.
@@ -112,6 +118,8 @@ The notebook saves presentation-ready figures under `reports/figures`.
 | Feature importance | `reports/figures/regression_feature_importance.png` |
 
 These figures can be used directly in the final report or presentation slides.
+
+The residual analysis figure is used to check whether prediction errors are centered around zero and whether error patterns become larger in certain predicted ADR ranges.
 
 ## 8. Feature Interpretation
 
@@ -146,13 +154,13 @@ The current model is a strong regression baseline. Future improvements can inclu
 
 - Feature ablation with and without `assigned_room_type_*`.
 - Time-based split for stricter future-booking evaluation.
-- More Random Forest parameter combinations.
+- More Random Forest parameter combinations. The current parameter search is intentionally limited for a clear baseline.
 - More detailed residual analysis by ADR range or hotel type.
 
 ## 11. Final Recommendation
 
-The regression modeling work is ready as a strong baseline. Random Forest depth 14 is the best current model because it has the lowest CV RMSE, the lowest test error, and the highest R².
+The regression modeling work is ready as a strong baseline. Random Forest depth 14 is the best current model among the five compared combinations because it has the lowest CV RMSE, the lowest test error, and the highest R².
 
 Safe presentation statement:
 
-> Random Forest depth 14 achieved the best ADR prediction performance. It reached test MAE 11.88, RMSE 18.68, and R² 0.8449, which means it explains about 84.5% of ADR variation in the test set.
+> Random Forest depth 14 achieved the best ADR prediction performance among the five compared model/parameter combinations. It reached test MAE 11.88, RMSE 18.68, and R² 0.8449, which means it explains about 84.5% of ADR variation in the test set.
