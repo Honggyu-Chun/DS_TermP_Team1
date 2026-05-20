@@ -23,14 +23,15 @@ def preprocess_hotel_booking_data(raw_data_path: str, output_dir: str):
     print(f"Loaded raw dataset successfully. Initial Shape: {df.shape}")
     
     # 2. Data Cleaning & Anomaly Resolution (Feedback #1)
+    # Missing values must be resolved before zero-guest filtering so unknown
+    # children counts are not treated as invalid bookings.
+    df['children'] = df['children'].fillna(0)
+    df['country'] = df['country'].fillna('Unknown')
+
     # Filter out invalid "Ghost Bookings" where total guest count is zero
     df['total_guests'] = df['adults'] + df['children'] + df['babies']
     df = df[df['total_guests'] > 0]
     print(f"Filtered zero-guest booking anomalies. Remaining records: {len(df)}")
-    
-    # Missing Value Imputation
-    df['children'] = df['children'].fillna(0)
-    df['country'] = df['country'].fillna('Unknown')
     
     # Convert IDs into binary flags to prevent models from treating nominal IDs as continuous scales
     if 'agent' in df.columns:
@@ -93,7 +94,8 @@ def preprocess_hotel_booking_data(raw_data_path: str, output_dir: str):
     print("=" * 40)
 
 if __name__ == "__main__":
+    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     preprocess_hotel_booking_data(
-        raw_data_path="../data/raw/hotel_bookings.csv",
-        output_dir="../data/processed"
+        raw_data_path=os.path.join(project_root, "data", "raw", "hotel_bookings.csv"),
+        output_dir=os.path.join(project_root, "data", "processed")
     )
