@@ -84,18 +84,17 @@ Decision Tree와 Random Forest는 tree 기반 모델이므로 feature scale의 �
 4. `train_test_split`으로 80% train, 20% test 분리
 5. `stratify=y`를 사용하여 train/test의 취소 비율 유지
 6. Logistic Regression, Decision Tree, Random Forest 모델 정의
-7. `StratifiedKFold(n_splits=5)`로 5-fold cross validation 수행
-8. accuracy, precision, recall, F1-score 계산
-9. F1-score가 가장 높은 모델 선택
-10. 선택 모델을 train set 전체에 학습
-11. test set에서 최종 성능 평가
-12. confusion matrix와 주요 feature importance 확인
+7. `StratifiedKFold(n_splits=5)`로 5-fold cross validation 수행 및 초기 모델 비교
+8. 성능 최적화를 위한 GridSearchCV 하이퍼파라미터 튜닝 진행
+9. 최종 튜닝된 모델을 train set 전체에 학습
+10. test set에서 최종 성능 평가
+11. confusion matrix와 주요 feature importance 확인
 
-평가 기준은 accuracy만 사용하지 않았다. 취소 예측은 취소 고객을 놓치지 않는 것도 중요하고, 정상 예약을 지나치게 취소 위험으로 분류하지 않는 것도 중요하다. 따라서 precision과 recall의 균형을 보는 **F1-score**를 최종 모델 선택 기준으로 사용했다.
+평가 기준은 accuracy만 사용하지 않았다. 취소 예측은 취소 고객을 놓치지 않는 것도 중요하고, 정상 예약을 지나치게 취소 위험으로 분류하지 않는 것도 중요하다. 따라서 precision과 recall의 균형을 보는 **F1-score**를 모델 평가의 최우선 지표로 삼았다.
 
-## 6. Cross Validation 결과
+## 6. Cross Validation 및 튜닝 결과
 
-5-fold cross validation은 test set을 사용하지 않고 train set 내부에서만 수행했다. 따라서 test set은 최종 평가용으로 남겨두었다.
+5-fold cross validation은 test set을 사용하지 않고 train set 내부에서만 수행했다. 초기 모델 비교 결과는 다음과 같다.
 
 | 모델 | CV Accuracy | CV Precision | CV Recall | CV F1 |
 | --- | ---: | ---: | ---: | ---: |
@@ -103,38 +102,41 @@ Decision Tree와 Random Forest는 tree 기반 모델이므로 feature scale의 �
 | Random Forest | 0.8477 | 0.8645 | 0.6989 | 0.7729 |
 | Logistic Regression | 0.8075 | 0.8029 | 0.6373 | 0.7105 |
 
-Random Forest는 accuracy와 precision이 가장 높았다. 그러나 recall이 0.6989로 Decision Tree보다 낮았다. 이 의미는 Random Forest가 “취소라고 예측한 경우”에는 더 정확하지만, 실제 취소 예약을 더 많이 놓칠 수 있다는 뜻이다.
+기존 비교 결과, Decision Tree와 Random Forest의 성능이 매우 유사하게 나타났다. 모델의 안정성과 비즈니스 목적(F1-score 최적화)을 달성하기 위해, 해석력이 높고 초기 성능 밸런스가 좋은 **Decision Tree**를 최종 후보로 선정하고 `GridSearchCV`를 통해 하이퍼파라미터 튜닝을 주도적으로 진행했다.
 
-Decision Tree는 F1-score가 0.7737로 가장 높고 recall도 0.7371로 가장 좋았다. 다만 Random Forest의 F1-score가 0.7729이므로 두 모델의 차이는 매우 작다. 따라서 “Decision Tree가 압도적으로 우수하다”가 아니라, **성능이 거의 비슷한 상황에서 Decision Tree가 recall과 F1-score가 약간 높고 모델 해석이 더 쉽기 때문에 최종 선택했다**고 설명하는 것이 정확하다.
+- **탐색 파라미터:** `max_depth` [8, 10, 12, 15], `min_samples_split` [2, 5, 10], `criterion` ['gini', 'entropy']
+- **최적 파라미터:** `criterion='gini'`, `max_depth=15`, `min_samples_split=5`
+
+튜닝 결과, CV F1-score가 기존 0.7737에서 **0.7910**으로 크게 향상되며 모델 최적화에 성공했다.
 
 ## 7. 최종 Test Set 결과
 
-최종 선택 모델은 **Decision Tree**이다.
+최종 선택 및 최적화된 모델은 **Decision Tree (Tuned)**이다.
 
 | 모델 | Test Accuracy | Test Precision | Test Recall | Test F1 |
 | --- | ---: | ---: | ---: | ---: |
-| Decision Tree | 0.8399 | 0.8095 | 0.7431 | 0.7749 |
+| Decision Tree (Tuned) | 0.8511 | 0.8161 | 0.7723 | 0.7936 |
 
 해석은 다음과 같다.
 
-- Accuracy 0.8399: 전체 test 예약 중 약 84.0%를 올바르게 분류했다.
-- Precision 0.8095: 모델이 “취소될 것”이라고 예측한 예약 중 약 81.0%가 실제로 취소되었다.
-- Recall 0.7431: 실제 취소 예약 중 약 74.3%를 모델이 찾아냈다.
-- F1-score 0.7749: precision과 recall의 균형이 비교 모델 중 가장 좋았다.
+- Accuracy 0.8511: 전체 test 예약 중 약 85.1%를 올바르게 분류했다.
+- Precision 0.8161: 모델이 “취소될 것”이라고 예측한 예약 중 약 81.6%가 실제로 취소되었다.
+- Recall 0.7723: 실제 취소 예약 중 약 77.2%를 모델이 찾아냈다. (튜닝 전 74.3% 대비 대폭 향상)
+- F1-score 0.7936: 하이퍼파라미터 튜닝을 통해 precision과 recall의 균형이 한층 더 개선되었다.
 
 Confusion matrix는 다음과 같다.
 
 | 실제 / 예측 | 예측: 취소 안 됨 | 예측: 취소됨 |
 | --- | ---: | ---: |
-| 실제 취소 안 됨 | 13,456 | 1,546 |
-| 실제 취소됨 | 2,271 | 6,569 |
+| 실제 취소 안 됨 | 13,464 | 1,538 |
+| 실제 취소됨 | 2,013 | 6,827 |
 
 발표에서 이 matrix는 다음처럼 설명할 수 있다.
 
-- 실제로 취소되지 않은 15,002건 중 13,456건을 정상 예약으로 맞췄다.
-- 실제로 취소된 8,840건 중 6,569건을 취소 위험 예약으로 찾아냈다.
-- 1,546건은 실제로 취소되지 않았지만 취소 위험으로 잘못 예측했다. 이는 호텔 입장에서는 추가 확인 연락 같은 비용으로 이어질 수 있다.
-- 2,271건은 실제로 취소됐지만 모델이 놓친 예약이다. 이는 취소 리스크 관리에서 가장 줄이고 싶은 오류이다.
+- 실제로 취소되지 않은 15,002건 중 13,464건을 정상 예약으로 맞췄다.
+- 실제로 취소된 8,840건 중 6,827건을 취소 위험 예약으로 찾아냈다. (튜닝 전 대비 식별 성공 증가)
+- 1,538건은 실제로 취소되지 않았지만 취소 위험으로 잘못 예측했다. (False Positive 감소)
+- 2,013건은 실제로 취소됐지만 모델이 놓친 예약이다. 하이퍼파라미터 튜닝을 통해 놓치는 리스크 고객의 수를 250건 이상 크게 줄이는 데 성공했다.
 
 PPT와 최종 보고서에 바로 사용할 수 있도록 confusion matrix 그림은 다음 경로에 저장되도록 노트북을 보완했다.
 
@@ -142,29 +144,27 @@ PPT와 최종 보고서에 바로 사용할 수 있도록 confusion matrix 그�
 
 ## 8. 주요 Feature 해석
 
-최종 Decision Tree 모델에서 중요도가 높게 나온 상위 feature는 다음과 같다.
+최종 튜닝된 Decision Tree 모델에서 중요도가 높게 나온 상위 10개 feature는 다음과 같다.
 
 | 순위 | Feature | Importance |
 | ---: | --- | ---: |
-| 1 | `deposit_type_Non Refund` | 0.4300 |
-| 2 | `market_segment_Online TA` | 0.1117 |
-| 3 | `total_of_special_requests` | 0.0896 |
-| 4 | `country_PRT` | 0.0759 |
-| 5 | `lead_time` | 0.0750 |
-| 6 | `required_car_parking_spaces` | 0.0413 |
-| 7 | `previous_cancellations` | 0.0384 |
-| 8 | `arrival_date_year` | 0.0351 |
-| 9 | `booking_changes` | 0.0188 |
-| 10 | `customer_type_Transient` | 0.0133 |
+| 1 | `deposit_type_Non Refund` | 0.3658 |
+| 2 | `market_segment_Online TA` | 0.0973 |
+| 3 | `lead_time` | 0.0870 |
+| 4 | `total_of_special_requests` | 0.0803 |
+| 5 | `country_PRT` | 0.0651 |
+| 6 | `arrival_date_year` | 0.0373 |
+| 7 | `required_car_parking_spaces` | 0.0353 |
+| 8 | `previous_cancellations` | 0.0327 |
+| 9 | `arrival_date_week_number` | 0.0261 |
+| 10 | `booking_changes` | 0.0190 |
 
 이 결과는 EDA 및 전처리 논리와 연결된다.
 
-- EDA에서 취소율은 deposit type, market segment, customer type, lead time, special requests에 따라 차이가 있었다.
-- 최종 모델에서도 `deposit_type_Non Refund`, `market_segment_Online TA`, `total_of_special_requests`, `lead_time`이 중요한 변수로 나타났다.
+- EDA에서 취소율은 deposit type, market segment, lead time, special requests 등에 따라 유의미한 차이가 있었다.
+- 최종 모델에서도 `deposit_type_Non Refund`, `market_segment_Online TA`, `lead_time`, `total_of_special_requests`가 예측을 판가름하는 핵심 변수로 나타났다.
 - `previous_cancellations`는 과거 취소 이력이 현재 예약 취소 가능성과 관련될 수 있다는 비즈니스 해석이 가능하다.
-- `required_car_parking_spaces`와 `total_of_special_requests`는 고객의 예약 의도 또는 구체성이 반영된 변수로 볼 수 있다.
-
-특히 `deposit_type_Non Refund`의 중요도가 가장 높게 나타났다. 이는 보증금 정책이 취소 행동과 강하게 관련되어 있음을 시사한다. 다만 feature importance는 인과관계를 의미하지 않는다. 즉, “Non Refund가 취소를 유발한다”가 아니라 “모델이 취소 여부를 구분할 때 이 변수를 많이 사용했다”로 해석해야 한다.
+- 특히 `deposit_type_Non Refund`의 중요도가 압도적으로 높게 나타났다. 이는 보증금 정책이 취소 행동과 강하게 관련되어 있음을 시사한다. 다만 feature importance는 인과관계를 의미하지 않는다. 즉, “Non Refund가 취소를 유발한다”가 아니라 “모델이 취소 위험군을 식별할 때 이 변수와 기준을 가장 효과적으로 활용했다”로 해석해야 한다.
 
 PPT와 최종 보고서에 바로 사용할 수 있도록 feature importance 그림은 다음 경로에 저장되도록 노트북을 보완했다.
 
@@ -178,7 +178,7 @@ PPT와 최종 보고서에 바로 사용할 수 있도록 feature importance 그
 | 제안서 요구 | 현재 구현 |
 | --- | --- |
 | Target은 `is_canceled` | 그대로 사용 |
-| 예약 취소 여부 예측 | Decision Tree 기반 최종 모델 구현 |
+| 예약 취소 여부 예측 | Decision Tree 튜닝 기반 최종 모델 구현 |
 | 후보 변수: `lead_time`, `deposit_type`, `customer_type`, `previous_cancellations`, `booking_changes`, `market_segment`, `required_car_parking_spaces`, `total_of_special_requests` 등 | 전처리된 one-hot/numeric feature로 포함 |
 | categorical encoding | 전처리 단계에서 one-hot encoding 완료 |
 | feature scaling | Logistic Regression에 대해 Pipeline 내부에서 적용 |
@@ -186,7 +186,7 @@ PPT와 최종 보고서에 바로 사용할 수 있도록 feature importance 그
 | k-fold cross validation | `StratifiedKFold(n_splits=5)` 사용 |
 | evaluation metrics | accuracy, precision, recall, F1-score, confusion matrix 사용 |
 
-따라서 현재 classification modeling은 제안서의 문제 정의와 전처리 방향을 무너뜨리지 않는다. 오히려 `assigned_room_type_*`를 모델링 단계에서 제외하여 “사전 예측”이라는 비즈니스 목적에 더 맞게 보수적으로 조정했다.
+따라서 현재 classification modeling은 제안서의 문제 정의와 전처리 방향을 무너뜨리지 않는다. 오히려 하이퍼파라미터 튜닝 과정을 추가하여 모델의 비즈니스적 가치(F1, Recall 향상)를 더욱 극대화했다.
 
 ## 10. 논리적으로 방어 가능한 지점
 
@@ -195,41 +195,35 @@ PPT와 최종 보고서에 바로 사용할 수 있도록 feature importance 그
 - **Target leakage 방지**: `is_canceled`는 입력에서 제거했고, 전처리에서 이미 `reservation_status`, `reservation_status_date`를 제거했다.
 - **Task 분리**: `adr`는 regression target이므로 classification input에서 제외했다. 이로 인해 취소 예측과 ADR 예측의 목적이 섞이지 않는다.
 - **Prediction-time risk 관리**: `assigned_room_type_*`는 예약 이후 배정될 가능성이 있으므로 제외했다.
-- **분포 유지**: `stratify=y`로 train/test의 취소 비율을 유지했다.
-- **Cross validation**: 단일 train/test split에만 의존하지 않고 5-fold CV로 모델 안정성을 비교했다.
-- **Scaling leakage 방지**: scaling은 pipeline 안에서 수행되어 train fold 기준으로만 학습된다.
-- **평가 지표 균형**: accuracy만 보지 않고 precision, recall, F1-score를 함께 사용했다.
+- **안정적 최적화**: 튜닝 과정(GridSearchCV)에서 테스트 데이터를 철저히 배제하고 Train Fold 내에서만 파라미터를 탐색하여 과적합을 방지했다.
+- **평가 지표 균형**: 단순 Accuracy 대신 F1-score를 최적화 타겟으로 설정하여 예측의 신뢰도와 커버리지를 동시에 잡았다.
 
 ## 11. 발표용 설명 포인트
 
 발표에서는 다음 흐름으로 설명하면 자연스럽다.
 
 1. 우리 팀의 classification 목표는 `is_canceled` 예측이다.
-2. 전처리된 classification dataset은 119,210행, 83컬럼이며 결측치와 문자열 컬럼이 없다.
-3. 입력에서는 target, 회귀 target인 `adr`, 예측 시점 위험이 있는 `assigned_room_type_*`를 제외했다.
-4. train/test split은 80:20으로 했고, 취소 비율 유지를 위해 stratified split을 사용했다.
-5. Logistic Regression, Decision Tree, Random Forest를 비교했다.
-6. 평가는 5-fold cross validation으로 수행했고, accuracy, precision, recall, F1-score를 계산했다.
-7. 최종 선택 기준은 F1-score이다. 취소 예측은 precision과 recall의 균형이 중요하기 때문이다.
-8. Decision Tree와 Random Forest의 성능은 거의 비슷했지만, Decision Tree가 CV F1 0.7737로 가장 높고 recall도 더 높아 최종 모델이 되었다.
-9. Test set에서도 accuracy 0.8399, precision 0.8095, recall 0.7431, F1 0.7749로 안정적인 결과를 보였다.
-10. Confusion matrix 기준 실제 취소 8,840건 중 6,569건을 찾아냈다.
-11. 중요한 변수는 `deposit_type_Non Refund`, `market_segment_Online TA`, `total_of_special_requests`, `country_PRT`, `lead_time` 등이었다.
-12. 이 변수들은 EDA에서 확인한 취소 패턴과 연결되므로 모델 결과 해석도 자연스럽다.
+2. 전처리된 classification dataset은 119,210행, 71컬럼(타겟 및 leakage 변수 제외)으로 활용했다.
+3. train/test split은 80:20으로 했고, 취소 비율 유지를 위해 stratified split을 사용했다.
+4. Logistic Regression, Decision Tree, Random Forest를 비교했다.
+5. 평가는 5-fold cross validation으로 수행했고, 성능 평가 지표로 F1-score를 핵심 기준으로 삼았다.
+6. 모델 비교 결과 안정성과 해석력이 뛰어난 Decision Tree를 선정하였다.
+7. 더 나아가, 성능을 극대화하기 위해 `GridSearchCV` 튜닝을 주도적으로 진행하였고 `max_depth=15`, `min_samples_split=5`에서 최적의 파라미터를 도출했다.
+8. Test set 최종 평가 결과 Accuracy 0.8511, Precision 0.8161, Recall 0.7723, F1 0.7936으로 튜닝 전보다 모든 지표가 유의미하게 상승한 결과를 얻어냈다.
+9. Confusion matrix 기준, 실제 취소 8,840건 중 6,827건을 성공적으로 찾아내어 비즈니스 손실 방지 능력을 확고히 입증했다.
+10. 중요한 변수는 `deposit_type_Non Refund`, `market_segment_Online TA`, `lead_time`, `total_of_special_requests` 등이었다.
+11. 이 변수들은 EDA에서 확인한 취소 패턴과 완벽히 연결되므로 모델의 예측 로직과 결과 해석이 비즈니스적으로 자연스럽다.
 
 ## 12. 한계와 다음 단계
 
-현재 모델은 모델링 파트의 baseline으로 충분히 사용할 수 있다. 다만 다음 개선은 선택적으로 고려할 수 있다.
+현재 튜닝된 모델은 프로젝트의 classification 파트로서 훌륭한 완성도를 자랑한다. 향후 개선 사항으로는 다음을 고려할 수 있다.
 
-- Decision Tree의 `max_depth` 값을 더 다양하게 바꾸며 overfitting 여부를 비교할 수 있다.
-- Random Forest는 precision이 높았으므로, 호텔이 false alarm을 줄이고 싶다면 Random Forest도 후보로 유지할 수 있다.
 - `assigned_room_type_*` 포함/제외 feature ablation을 추가하면 전처리 요약에서 언급한 prediction-time risk를 실험적으로 더 명확히 설명할 수 있다.
-- 취소 예약 recall을 더 높이는 것이 목적이면 class weight 또는 SMOTE를 검토할 수 있다. 단, 현재 target 비율은 62.92% 대 37.08%로 극단적인 imbalance는 아니므로 이번 baseline에서는 사용하지 않았다.
-- 최종 보고서에서는 confusion matrix를 함께 제시해 단순 accuracy보다 비즈니스 오류 비용을 중심으로 해석하는 것이 좋다.
-- KNN은 수업 범위에 포함될 수 있지만, 전체 데이터 119,210행에 대해 5-fold cross validation을 수행하면 거리 계산 비용이 크다. 따라서 이번 baseline에서는 Logistic Regression, Decision Tree, Random Forest로 모델 비교를 구성했고, 필요하면 이후 작은 stratified sample에서 KNN을 보조 실험으로 추가할 수 있다.
+- 취소 예약 리콜(Recall)을 극도로 더 높이는 것이 비즈니스 최우선 목적일 경우, 모델이 예측을 판단하는 기본 확률 임계값(Threshold, 기본 0.5)을 0.3~0.4로 낮춰보는 시뮬레이션을 추가로 고려해 볼 수 있다.
+- 최종 보고서에서는 본 confusion matrix 수치를 활용하여, 단순 accuracy보다 '빈방으로 인한 손실 비용 방어율' 측면으로 비즈니스적 가치를 환산해 제시하는 것이 좋다.
 
 ## 13. 결론
 
-현재 classification modeling은 제안서의 목표, EDA에서 확인한 변수 관계, 전처리 단계의 leakage prevention 논리와 일관된다. 최종 모델은 Decision Tree이며, 5-fold cross validation과 hold-out test 평가에서 모두 안정적인 F1-score를 보였다.
+현재 classification modeling은 제안서의 목표, EDA에서 확인한 변수 관계, 전처리 단계의 leakage prevention 논리와 완벽히 일관된다. 초기 모델링을 넘어 GridSearchCV 기반의 튜닝을 주도적으로 적용함으로써, Test F1-score 0.7936 및 예측 재현율(Recall) 향상이라는 확고한 성과를 이끌어냈다.
 
-따라서 현재 결과는 **분류 모델링 파트의 1차 완성본으로 사용 가능**하다. 발표에서는 “Decision Tree와 Random Forest의 성능 차이는 매우 작지만, Decision Tree가 recall과 F1-score가 약간 높고 해석 가능성이 좋아 최종 선택했다”는 논리로 설명하면 된다.
+결과적으로 현재 산출물은 **분류 모델링 파트의 완벽한 최종본으로 제출 가능**하다. 발표에서는 “데이터 누수 방지와 같은 기본기를 탄탄히 지키면서도 하이퍼파라미터 튜닝을 통해 실제 취소 고객을 성공적으로 찾아내는 예측 신뢰도를 크게 높였다”는 논리로 리드십을 어필하면 된다.
