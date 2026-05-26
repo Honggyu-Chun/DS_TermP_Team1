@@ -1,9 +1,12 @@
-# src/processing.py
-import os
-import pandas as pd
-import numpy as np
+from pathlib import Path
 
-def preprocess_hotel_booking_data(raw_data_path: str, output_dir: str):
+import pandas as pd
+
+
+def preprocess_hotel_booking_data(
+    raw_data_path: str = "data/raw/hotel_bookings.csv",
+    output_dir: str = "data/processed",
+) -> dict:
     """
     Executes the end-to-end hotel booking data preprocessing pipeline.
     Synchronizes logic between script and notebook, ensuring no absolute paths are leaked.
@@ -11,12 +14,21 @@ def preprocess_hotel_booking_data(raw_data_path: str, output_dir: str):
     print("=" * 60)
     print("STARTING HOTEL BOOKING DATA PREPROCESSING PIPELINE")
     print("=" * 60)
+
+    project_root = Path(__file__).resolve().parents[1]
+    raw_path = Path(raw_data_path)
+    if not raw_path.is_absolute() and not raw_path.exists():
+        raw_path = project_root / raw_path
+
+    processed_dir = Path(output_dir)
+    if not processed_dir.is_absolute():
+        processed_dir = project_root / processed_dir
     
     # 1. Raw Data Loading & Validation
-    if not os.path.exists(raw_data_path):
-        raise FileNotFoundError(f"Raw data not found at target path: {raw_data_path}")
+    if not raw_path.exists():
+        raise FileNotFoundError(f"Raw data not found at target path: {raw_path}")
         
-    df_raw = pd.read_csv(raw_data_path)
+    df_raw = pd.read_csv(raw_path)
     df = df_raw.copy()
     df.columns = df.columns.str.strip()
     
@@ -42,6 +54,8 @@ def preprocess_hotel_booking_data(raw_data_path: str, output_dir: str):
         df.drop('company', axis=1, inplace=True)
         
     # 3. Feature Engineering & Dimensionality Management
+    # This corresponds to total_stay_days in the project proposal.
+    # Keep the existing column name for notebook and report compatibility.
     df['total_stay'] = df['stays_in_weekend_nights'] + df['stays_in_week_nights']
     df['is_family'] = ((df['children'] > 0) | (df['babies'] > 0)).astype(int)
     
@@ -67,20 +81,23 @@ def preprocess_hotel_booking_data(raw_data_path: str, output_dir: str):
     df_final[bool_cols] = df_final[bool_cols].astype(int)
     
     # 6. Decoupled Dataset Splitting & Export (Feedback #2, #3, #7)
-    os.makedirs(output_dir, exist_ok=True)
+    processed_dir.mkdir(parents=True, exist_ok=True)
     
     # A. Classification Dataset
-    clf_output_path = os.path.join(output_dir, 'hotel_bookings_clf.csv')
+    clf_output_path = processed_dir / 'hotel_bookings_clf.csv'
     df_final.to_csv(clf_output_path, index=False)
-    print(f"Saved classification dataset to `../data/processed/hotel_bookings_clf.csv`")
+    print(f"Saved classification dataset to `{clf_output_path}`")
     
     # B. Regression Dataset (Non-canceled bookings with strict ADR filtering)
     df_reg = df_final[df_final['is_canceled'] == 0].copy()
     df_reg = df_reg[(df_reg['adr'] > 0) & (df_reg['adr'] < 500)]
     
-    reg_output_path = os.path.join(output_dir, 'hotel_bookings_reg.csv')
+    reg_output_path = processed_dir / 'hotel_bookings_reg.csv'
     df_reg.to_csv(reg_output_path, index=False)
-    print(f"Saved regression dataset to `../data/processed/hotel_bookings_reg.csv`")
+    print(f"Saved regression dataset to `{reg_output_path}`")
+
+    missing_values_after_processing = int(df_final.isnull().sum().sum())
+    object_columns_after_processing = len(df_final.select_dtypes(include=['object']).columns)
     
     # 7. Final Sanity Check and Verification Audit (Feedback #8)
     print("\n" + "=" * 40)
@@ -89,13 +106,22 @@ def preprocess_hotel_booking_data(raw_data_path: str, output_dir: str):
     print(f"Raw dataset loaded successfully  : True (Shape: {df_raw.shape})")
     print(f"Classification dataset (CLF) shape: {df_final.shape[0]} rows / {df_final.shape[1]} columns")
     print(f"Regression dataset (REG) shape    : {df_reg.shape[0]} rows / {df_reg.shape[1]} columns")
-    print(f"Total Remaining Missing Values   : {df_final.isnull().sum().sum()}")
-    print(f"Total Remaining Object Columns   : {len(df_final.select_dtypes(include=['object']).columns)}")
+    print(f"Total Remaining Missing Values   : {missing_values_after_processing}")
+    print(f"Total Remaining Object Columns   : {object_columns_after_processing}")
     print("=" * 40)
 
+    return {
+        "classification_path": str(clf_output_path),
+        "regression_path": str(reg_output_path),
+        "raw_shape": df_raw.shape,
+        "classification_shape": df_final.shape,
+        "regression_shape": df_reg.shape,
+        "missing_values_after_processing": missing_values_after_processing,
+        "object_columns_after_processing": object_columns_after_processing,
+    }
+
+
 if __name__ == "__main__":
-    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-    preprocess_hotel_booking_data(
-        raw_data_path=os.path.join(project_root, "data", "raw", "hotel_bookings.csv"),
-        output_dir=os.path.join(project_root, "data", "processed")
-    )
+    result = preprocess_hotel_booking_data()
+    print("Classification path:", result["classification_path"])
+    print("Regression path:", result["regression_path"])
