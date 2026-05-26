@@ -192,7 +192,7 @@ Regression figures:
 
 ## GitHub URL
 
-Placeholder:
+Repository:
 
 ```text
 https://github.com/Honggyu-Chun/DS_TermP_Team1
