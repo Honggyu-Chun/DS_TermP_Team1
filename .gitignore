@@ -5,10 +5,8 @@ no_use/
 node_modules/
 .codex
 
-*.csv
 *.xlsx
 *.zip
-data/
 
 __pycache__/
 *.py[cod]
