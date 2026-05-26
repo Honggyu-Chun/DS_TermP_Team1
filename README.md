@@ -32,8 +32,10 @@ DS_TermP_Team1/
 |   `-- 04_regression_modeling.ipynb
 |-- reports/
 |   |-- figures/
-|   |-- classification_modeling_user_manual.md
-|   `-- regression_modeling_user_manual.md
+|   |-- eda_summary.md
+|   |-- preprocessing_summary.md
+|   |-- classification_modeling_summary.md
+|   `-- regression_modeling_summary.md
 |-- src/
 |   |-- __init__.py
 |   |-- processing.py
@@ -152,6 +154,13 @@ python src/pipeline.py
 | `run_full_pipeline()` | `src/pipeline.py` | Run preprocessing, classification, and regression from one entry point |
 
 ## Output Files and Figures
+
+Stage summaries:
+
+- `reports/eda_summary.md`
+- `reports/preprocessing_summary.md`
+- `reports/classification_modeling_summary.md`
+- `reports/regression_modeling_summary.md`
 
 Processed data:
 

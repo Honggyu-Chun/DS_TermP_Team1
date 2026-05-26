@@ -1,73 +1,65 @@
 # Exploratory Data Analysis (EDA) Summary
 
-## EDA Objective
+## 1. Purpose
 
-This EDA was conducted to support two project objectives:
+The purpose of the EDA stage is to understand the Kaggle Hotel Booking Demand dataset before preprocessing and modeling. This stage supports two project targets:
 
-1. Booking Cancellation Prediction (`is_canceled`)
-2. ADR (Average Daily Rate) Prediction
+- Classification target: `is_canceled`
+- Regression target: `adr`
 
-The analysis focused on understanding booking patterns, identifying important variables, detecting missing values and outliers, and exploring relationships between features.
+The EDA identifies data quality issues, important booking patterns, potential outliers, and relationships that guide feature engineering and modeling decisions.
 
----
+## 2. Reason
 
-## Dataset Exploration
+EDA is required because the raw dataset contains mixed numerical and categorical variables, missing values, outliers, and booking information that may create leakage if used without review. The project also has two different modeling goals, so EDA must explain both cancellation behavior and ADR variation.
 
-Basic dataset exploration included:
+Business reasons:
 
-* **Dataset shape** and sample records
-* **Numerical and categorical** variable classification
-* **Binary variable** identification
-* **Missing value** analysis
-* **Statistical summary** of key numerical variables
+- Cancellation analysis helps hotels understand which reservations are more likely to be canceled.
+- ADR analysis helps hotels understand price patterns across seasonality, hotel type, and booking conditions.
+- Data quality analysis prevents invalid records from weakening model reliability.
 
-Missing counts and missing rates were examined to understand incomplete data.
+## 3. Logic
 
----
+The analysis follows this logic:
 
-## Cancellation Analysis
+1. Inspect the raw dataset structure and variable types.
+2. Identify missing values and abnormal records before modeling.
+3. Analyze cancellation patterns by important booking features.
+4. Analyze ADR distribution, outliers, and seasonal patterns.
+5. Use the findings to justify preprocessing, feature engineering, and model evaluation choices.
 
-Several visualizations were created to analyze cancellation behavior:
+This logic connects EDA directly to the later preprocessing, classification, and regression stages.
 
-* Distribution of cancellation status
-* Cancellation rate by **hotel type**
-* Cancellation rate by **deposit type**
-* Cancellation rate by **market segment**
-* Cancellation rate by **customer type**
-* Cancellation rate by **lead time group**
-* Cancellation rate by **total special requests**
+## 4. Method
 
-The analysis showed that cancellation patterns vary depending on customer and booking characteristics.
+The EDA includes:
 
----
+- Dataset shape and sample record inspection.
+- Numerical, categorical, and binary variable classification.
+- Missing value count and missing rate review.
+- Statistical summaries of key numerical variables.
+- Cancellation plots by hotel type, deposit type, market segment, customer type, lead time group, and special requests.
+- ADR histograms, boxplots, hotel/month comparisons, and lead time vs ADR scatter plots.
+- Outlier checks for high ADR values, non-positive ADR values, large lead time values, and zero-guest bookings.
+- Correlation matrix review for important numerical variables.
 
-## ADR Analysis
+Key figures are saved under `reports/figures`.
 
-ADR-related analysis included:
+## 5. Results
 
-* **Histogram** of ADR
-* **Boxplot** of ADR
-* ADR distribution by **hotel type**
-* Average ADR by **arrival month**
-* Scatter plot of **lead time** and **ADR**
+Main EDA findings:
 
-The results indicated that ADR has a **right-skewed distribution** with several outliers and seasonal patterns.
+- Cancellation rates vary meaningfully by deposit type, market segment, lead time, customer type, and total special requests.
+- ADR has a right-skewed distribution with clear outliers.
+- ADR patterns differ by hotel type and arrival month, indicating seasonal and operational price effects.
+- Zero-guest bookings exist and should be removed during preprocessing.
+- Missing values in `children` and `country` require explicit handling.
+- `reservation_status` and `reservation_status_date` are leakage-prone because they are determined after the booking outcome.
 
----
+These findings justify the later preprocessing decisions: missing value handling, zero-guest filtering, ADR filtering for regression, one-hot encoding, feature engineering, and leakage prevention.
 
-## Outlier and Correlation Analysis
+## 6. Stage Conclusion
 
-Outlier analysis identified:
+The EDA stage provides the evidence base for the entire project pipeline. It confirms that the project should use encoded categorical features, leakage-safe preprocessing, cancellation classification, and ADR regression.
 
-* Extremely **high ADR values**
-* ADR values **less than or equal to zero**
-* Extremely **large lead time values**
-* Bookings with **zero guests**
-
-A **correlation matrix** was also generated to examine relationships between important variables such as `is_canceled`, `adr`, `lead_time`, and `previous_cancellations`.
-
----
-
-## Conclusion
-
-The EDA provided useful insights for both cancellation prediction and ADR prediction tasks. The findings from this analysis will support **preprocessing**, **feature engineering**, and **machine learning model development**.
