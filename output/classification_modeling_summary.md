@@ -27,7 +27,7 @@ Top-level function:
 ```python
 run_classification_modeling(
     data_path="data/processed/hotel_bookings_clf.csv",
-    output_dir="reports/figures",
+    output_dir="output/figures",
     test_size=0.2,
     n_splits=5,
     random_state=42,
@@ -166,9 +166,9 @@ Output figures:
 
 | Figure | Path |
 | --- | --- |
-| Model comparison | `reports/figures/classification_model_comparison.png` |
-| Confusion matrix | `reports/figures/confusion_matrix_decision_tree.png` |
-| Feature importance | `reports/figures/classification_feature_importance.png` |
+| Model comparison | `output/figures/classification_model_comparison.png` |
+| Confusion matrix | `output/figures/confusion_matrix_decision_tree.png` |
+| Feature importance | `output/figures/classification_feature_importance.png` |
 
 ## 6. Function Output Specification
 

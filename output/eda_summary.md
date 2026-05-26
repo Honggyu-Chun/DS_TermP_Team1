@@ -44,7 +44,7 @@ The EDA includes:
 - Outlier checks for high ADR values, non-positive ADR values, large lead time values, and zero-guest bookings.
 - Correlation matrix review for important numerical variables.
 
-Key figures are saved under `reports/figures`.
+Key figures are saved under `output/figures`.
 
 ## 5. Results
 

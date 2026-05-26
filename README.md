@@ -30,7 +30,7 @@ DS_TermP_Team1/
 |   |-- 02_processing.ipynb
 |   |-- 03_classification_modeling.ipynb
 |   `-- 04_regression_modeling.ipynb
-|-- reports/
+|-- output/
 |   |-- figures/
 |   |-- eda_summary.md
 |   |-- preprocessing_summary.md
@@ -157,10 +157,10 @@ python src/pipeline.py
 
 Stage summaries:
 
-- `reports/eda_summary.md`
-- `reports/preprocessing_summary.md`
-- `reports/classification_modeling_summary.md`
-- `reports/regression_modeling_summary.md`
+- `output/eda_summary.md`
+- `output/preprocessing_summary.md`
+- `output/classification_modeling_summary.md`
+- `output/regression_modeling_summary.md`
 
 Processed data:
 
@@ -169,16 +169,16 @@ Processed data:
 
 Classification figures:
 
-- `reports/figures/classification_model_comparison.png`
-- `reports/figures/confusion_matrix_decision_tree.png`
-- `reports/figures/classification_feature_importance.png`
+- `output/figures/classification_model_comparison.png`
+- `output/figures/confusion_matrix_decision_tree.png`
+- `output/figures/classification_feature_importance.png`
 
 Regression figures:
 
-- `reports/figures/regression_model_comparison.png`
-- `reports/figures/regression_actual_vs_predicted.png`
-- `reports/figures/regression_residual_analysis.png`
-- `reports/figures/regression_feature_importance.png`
+- `output/figures/regression_model_comparison.png`
+- `output/figures/regression_actual_vs_predicted.png`
+- `output/figures/regression_residual_analysis.png`
+- `output/figures/regression_feature_importance.png`
 
 ## Project Requirements Coverage
 

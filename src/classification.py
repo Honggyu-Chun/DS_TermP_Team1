@@ -37,7 +37,7 @@ def _resolve_project_path(path_value: str, project_root: Path) -> Path:
 
 def run_classification_modeling(
     data_path="data/processed/hotel_bookings_clf.csv",
-    output_dir="reports/figures",
+    output_dir="output/figures",
     test_size=0.2,
     n_splits=5,
     random_state=42,

@@ -22,7 +22,7 @@ Top-level function:
 ```python
 run_regression_modeling(
     data_path="data/processed/hotel_bookings_reg.csv",
-    output_dir="reports/figures",
+    output_dir="output/figures",
     test_size=0.2,
     n_splits=5,
     random_state=42,
@@ -140,10 +140,10 @@ Output figures:
 
 | Figure | Path |
 | --- | --- |
-| Model comparison | `reports/figures/regression_model_comparison.png` |
-| Actual vs predicted ADR | `reports/figures/regression_actual_vs_predicted.png` |
-| Residual analysis | `reports/figures/regression_residual_analysis.png` |
-| Feature importance | `reports/figures/regression_feature_importance.png` |
+| Model comparison | `output/figures/regression_model_comparison.png` |
+| Actual vs predicted ADR | `output/figures/regression_actual_vs_predicted.png` |
+| Residual analysis | `output/figures/regression_residual_analysis.png` |
+| Feature importance | `output/figures/regression_feature_importance.png` |
 
 Interpretation:
 

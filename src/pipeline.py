@@ -18,7 +18,7 @@ from src.regression import run_regression_modeling
 def run_full_pipeline(
     raw_data_path="data/raw/hotel_bookings.csv",
     processed_dir="data/processed",
-    figure_dir="reports/figures",
+    figure_dir="output/figures",
     run_classification=True,
     run_regression=True,
     run_classification_tuning=True,

@@ -16,7 +16,7 @@ from sklearn.tree import DecisionTreeRegressor
 
 def run_regression_modeling(
     data_path="data/processed/hotel_bookings_reg.csv",
-    output_dir="reports/figures",
+    output_dir="output/figures",
     test_size=0.2,
     n_splits=5,
     random_state=42,
