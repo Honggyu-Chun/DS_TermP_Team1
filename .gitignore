@@ -1,18 +1,26 @@
-.ipynb_checkpoints/ 
-.ipynb_checkpoints/ 
-
-no_use/
-node_modules/
-.codex
-
-*.xlsx
-*.zip
-
+# Python cache files
 __pycache__/
 *.py[cod]
 *$py.class
 *.pyc
 
+# Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# Local environment and editor settings
+.venv/
+venv/
+env/
 .vscode/
 .idea/
 .DS_Store
+
+# Local scratch files and exported archives
+no_use/
+tmp/
+temp/
+*.zip
+*.xlsx
+
+# JavaScript dependencies, if accidentally created by local tooling
+node_modules/
