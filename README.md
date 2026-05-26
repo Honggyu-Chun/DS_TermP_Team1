@@ -195,7 +195,7 @@ Regression figures:
 Placeholder:
 
 ```text
-https://github.com/<organization-or-user>/DS_TermP_Team1
+https://github.com/Honggyu-Chun/DS_TermP_Team1
 ```
 
 ## Citation and References
