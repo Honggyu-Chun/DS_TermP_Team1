@@ -65,7 +65,7 @@ def run_classification_modeling(
     run_tuning : bool
         If True, tune the best baseline model with GridSearchCV.
     drop_assigned_room_type : bool
-        If True, remove assigned_room_type_* columns to reduce prediction-time leakage risk.
+        If True, remove assigned_room_type_* columns that may not be available at prediction time.
 
     Returns
     -------
@@ -84,7 +84,7 @@ def run_classification_modeling(
         figure_dir.mkdir(parents=True, exist_ok=True)
 
     print("=" * 60)
-    print("STARTING CLASSIFICATION MODELING PIPELINE")
+    print("Starting classification modeling...")
     print("=" * 60)
     print("Data path:", data_file)
 

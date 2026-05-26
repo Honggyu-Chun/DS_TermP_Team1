@@ -65,7 +65,7 @@ The modeling logic is:
 9. Tune the best baseline model with `GridSearchCV(scoring="f1")`.
 10. Evaluate the final model on the untouched test set.
 
-This logic keeps prediction-time leakage risk low and keeps the classification objective aligned with the proposal.
+This logic avoids columns that may not be available at prediction time and keeps the classification objective aligned with the proposal.
 
 ## 4. Method
 
@@ -87,7 +87,7 @@ Excluded columns:
 | --- | --- |
 | `is_canceled` | Target variable |
 | `adr` | Regression target, excluded to keep tasks separated |
-| `assigned_room_type_*` | Removed by default to reduce prediction-time leakage risk |
+| `assigned_room_type_*` | Removed by default because it may not be available at prediction time |
 
 Compared models:
 
@@ -199,4 +199,3 @@ print(result["test_result"].round(4))
 ## 7. Stage Conclusion
 
 The classification modeling stage is consistent with the proposal and project requirements. It uses a leakage-aware feature set, encoded categorical variables, model-specific scaling, Stratified K-fold cross validation, and F1-based final model selection. The final tuned Decision Tree reaches test F1-score 0.7936 and provides interpretable cancellation-risk drivers.
-

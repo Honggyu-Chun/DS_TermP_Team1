@@ -84,7 +84,7 @@ Excluded columns:
 | --- | --- |
 | `adr` | Regression target |
 | `is_canceled` | Constant zero in the regression dataset |
-| `assigned_room_type_*` | Removed by default to reduce prediction-time leakage risk |
+| `assigned_room_type_*` | Removed by default because it may not be available at prediction time |
 
 Compared model/parameter combinations:
 
@@ -181,4 +181,3 @@ print(result["test_result"].round(4))
 ## 7. Stage Conclusion
 
 The regression modeling stage is consistent with the proposal and project requirements. It uses encoded categorical variables, model-specific scaling, K-fold cross validation, and RMSE-based model selection. Random Forest depth 14 is the best model among the compared course-covered combinations and can support hotel pricing and revenue management decisions.
-

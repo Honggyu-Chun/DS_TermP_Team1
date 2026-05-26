@@ -50,7 +50,7 @@ def run_full_pipeline(
         Dictionary containing preprocessing output and optional modeling outputs.
     """
     print("=" * 60)
-    print("STARTING FULL HOTEL BOOKING PIPELINE")
+    print("Starting full pipeline...")
     print("=" * 60)
 
     preprocessing_result = preprocess_hotel_booking_data(
@@ -76,7 +76,7 @@ def run_full_pipeline(
         )
 
     print("=" * 60)
-    print("FULL HOTEL BOOKING PIPELINE FINISHED")
+    print("Full pipeline finished.")
     print("=" * 60)
 
     return result

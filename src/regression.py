@@ -61,7 +61,7 @@ def run_regression_modeling(
     if "adr" not in df.columns:
         raise ValueError("The regression dataset must include the target column 'adr'.")
 
-    # Remove target, constant cancellation flag, and possible prediction-time leakage columns.
+    # Remove target, constant cancellation flag, and columns that may not be available before prediction.
     assigned_cols = [col for col in df.columns if col.startswith("assigned_room_type_")]
     drop_cols = ["adr", "is_canceled"] + assigned_cols
     X = df.drop(columns=drop_cols, errors="ignore")

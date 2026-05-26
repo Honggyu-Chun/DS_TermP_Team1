@@ -8,11 +8,11 @@ def preprocess_hotel_booking_data(
     output_dir: str = "data/processed",
 ) -> dict:
     """
-    Executes the end-to-end hotel booking data preprocessing pipeline.
-    Synchronizes logic between script and notebook, ensuring no absolute paths are leaked.
+    Run the hotel booking preprocessing steps and save model-ready datasets.
+    This keeps the script and notebook preprocessing logic consistent.
     """
     print("=" * 60)
-    print("STARTING HOTEL BOOKING DATA PREPROCESSING PIPELINE")
+    print("Starting preprocessing...")
     print("=" * 60)
 
     project_root = Path(__file__).resolve().parents[1]
@@ -34,7 +34,7 @@ def preprocess_hotel_booking_data(
     
     print(f"Loaded raw dataset successfully. Initial Shape: {df.shape}")
     
-    # 2. Data Cleaning & Anomaly Resolution (Feedback #1)
+    # 2. Data cleaning and anomaly handling
     # Missing values must be resolved before zero-guest filtering so unknown
     # children counts are not treated as invalid bookings.
     df['children'] = df['children'].fillna(0)
@@ -68,7 +68,7 @@ def preprocess_hotel_booking_data(
     leak_cols = ['reservation_status', 'reservation_status_date']
     df.drop([c for c in leak_cols if c in df.columns], axis=1, inplace=True)
     
-    # 5. Categorical One-Hot Encoding (Including Room Types - Feedback #5)
+    # 5. Categorical one-hot encoding
     cat_cols = [
         'hotel', 'meal', 'market_segment', 'distribution_channel', 
         'deposit_type', 'customer_type', 'arrival_date_month', 'country',
@@ -76,11 +76,11 @@ def preprocess_hotel_booking_data(
     ]
     df_final = pd.get_dummies(df, columns=cat_cols, drop_first=True)
     
-    # Convert bool types to int for cross-platform model alignment
+    # Convert boolean dummy columns to 0/1 integers.
     bool_cols = df_final.select_dtypes(include=['bool']).columns
     df_final[bool_cols] = df_final[bool_cols].astype(int)
     
-    # 6. Decoupled Dataset Splitting & Export (Feedback #2, #3, #7)
+    # 6. Save separate classification and regression datasets
     processed_dir.mkdir(parents=True, exist_ok=True)
     
     # A. Classification Dataset
@@ -99,9 +99,9 @@ def preprocess_hotel_booking_data(
     missing_values_after_processing = int(df_final.isnull().sum().sum())
     object_columns_after_processing = len(df_final.select_dtypes(include=['object']).columns)
     
-    # 7. Final Sanity Check and Verification Audit (Feedback #8)
+    # 7. Final sanity check
     print("\n" + "=" * 40)
-    print("FINAL PIPELINE VERIFICATION AUDIT")
+    print("Preprocessing check")
     print("=" * 40)
     print(f"Raw dataset loaded successfully  : True (Shape: {df_raw.shape})")
     print(f"Classification dataset (CLF) shape: {df_final.shape[0]} rows / {df_final.shape[1]} columns")
