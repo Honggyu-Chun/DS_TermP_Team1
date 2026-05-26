@@ -1,6 +1,10 @@
 .ipynb_checkpoints/ 
 .ipynb_checkpoints/ 
 
+no_use/
+node_modules/
+.codex
+
 *.csv
 *.xlsx
 *.zip
