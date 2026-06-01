@@ -69,11 +69,25 @@ def run_full_pipeline(
         )
 
     if run_regression:
-        result["regression"] = run_regression_modeling(
+        print("=" * 60)
+        print("Starting regression modeling...")
+        print("=" * 60)
+
+        regression_result = run_regression_modeling(
             data_path=preprocessing_result["regression_path"],
             output_dir=figure_dir,
             save_figures=save_figures,
         )
+
+        result["regression"] = regression_result
+
+        print("\n[Regression Cross Validation Results]")
+        print(regression_result["top5_result"].round(4).to_string(index=False))
+
+        print("\n[Regression Test Results]")
+        print(regression_result["test_result"].round(4).to_string(index=False))
+
+        print("\nFinal selected regression model:", regression_result["best_model_name"])
 
     print("=" * 60)
     print("Full pipeline finished.")
